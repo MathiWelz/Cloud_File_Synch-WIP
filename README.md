@@ -1,5 +1,7 @@
 # ☁️ CloudSync
 
+Status: Work In Progress (WIP)
+
 Bidirectional file sync between **Google Drive, Azure Blob Storage, and AWS S3** and a local folder.  
 OS-agnostic (Linux · macOS · Windows) · No runtime dependencies · Single binary.
 
