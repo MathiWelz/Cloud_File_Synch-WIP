@@ -1,0 +1,107 @@
+# ═══════════════════════════════════════════════════════════════════
+#  CloudSync — config.yaml
+#  SECURITY: chmod 600 config.yaml  (contains secrets)
+#
+#  Credentials can be set inline OR as environment variables:
+#    client_secret: "${GDRIVE_CLIENT_SECRET}"
+# ═══════════════════════════════════════════════════════════════════
+
+# Directory where per-provider sync-state JSON files are stored.
+# Defaults to ~/.cloudsync/state when omitted.
+state_dir: "~/.cloudsync/state"
+
+# ──────────────────────────────────────────────────────────────────
+# PROVIDERS
+# Each entry maps a cloud folder to a local directory.
+# Supported types: gdrive | azure | s3
+# ──────────────────────────────────────────────────────────────────
+providers:
+
+  # ── Google Drive ────────────────────────────────────────────────
+  - name: "Google Drive"
+    type: gdrive
+    enabled: true
+    # Name of the folder inside Google Drive to sync (path separated by /).
+    # Use "root" to sync the entire Drive root.
+    remote_folder: "University"
+    local_destination: "~/backups/GoogleDocs/University"
+    # both | cloud-to-local | local-to-cloud
+    sync_direction: both
+    credentials:
+      # Create an OAuth2 "Desktop app" client in Google Cloud Console:
+      #   APIs & Services → Credentials → + Create Credentials → OAuth client ID
+      client_id: "${GDRIVE_CLIENT_ID}"
+      client_secret: "${GDRIVE_CLIENT_SECRET}"
+      # Token is written here after first authorisation; kept between runs.
+      token_file: "~/.cloudsync/gdrive_token.json"
+
+  # ── Azure Blob Storage ──────────────────────────────────────────
+  - name: "Azure Blob"
+    type: azure
+    enabled: true
+    # Format: "container-name" or "container-name/optional/prefix"
+    remote_folder: "University-container"
+    local_destination: "~/backups/AzureDocs/University"
+    sync_direction: both
+    credentials:
+      # Option A — connection string (recommended for simplicity):
+      connection_string: "${AZURE_STORAGE_CONNECTION_STRING}"
+      # Option B — account name + key (used when connection_string is empty):
+      # account_name: "${AZURE_STORAGE_ACCOUNT}"
+      # account_key: "${AZURE_STORAGE_KEY}"
+
+  # ── AWS S3 ──────────────────────────────────────────────────────
+  - name: "AWS S3"
+    type: s3
+    enabled: true
+    # Format: "bucket-name" or "bucket-name/optional/prefix"
+    remote_folder: "my-bucket/University"
+    local_destination: "~/backups/AWSS3/University"
+    sync_direction: both
+    credentials:
+      access_key_id: "${AWS_ACCESS_KEY_ID}"
+      secret_access_key: "${AWS_SECRET_ACCESS_KEY}"
+      region: "us-east-1"
+      # Optional: temporary session token for STS / assumed roles
+      # session_token: "${AWS_SESSION_TOKEN}"
+      #
+      # TIP: Leave access_key_id blank to use the standard AWS credential
+      # chain (env vars → ~/.aws/credentials → EC2 instance role).
+
+# ──────────────────────────────────────────────────────────────────
+# SYNC BEHAVIOUR
+# ──────────────────────────────────────────────────────────────────
+sync:
+  # Warn the user (and prompt to confirm) if a single download would
+  # consume more than this fraction of the remaining free disk space.
+  # Range: 0.0–1.0.  Default: 0.75
+  disk_threshold: 0.75
+
+  # Skip files larger than this (megabytes). 0 = no limit.
+  max_file_size_mb: 0
+
+  # Shell-style glob patterns matched against the base filename.
+  exclude_patterns:
+    - "*.tmp"
+    - "*.DS_Store"
+    - ".Thumbs.db"
+    - "__MACOSX"
+    - "desktop.ini"
+    - "*.part"
+
+# ──────────────────────────────────────────────────────────────────
+# EMAIL NOTIFICATIONS
+# An HTML report is sent to `email` after every sync run.
+# ──────────────────────────────────────────────────────────────────
+notification:
+  enabled: true
+  email: "you@example.com"
+  smtp:
+    host: "smtp.gmail.com"
+    port: 587           # 587 = STARTTLS (recommended), 465 = implicit TLS
+    username: "sender@gmail.com"
+    # For Gmail, generate an App Password:
+    # myaccount.google.com → Security → App passwords
+    password: "${SMTP_PASSWORD}"
+    from: "CloudSync <sender@gmail.com>"
+    use_tls: false      # false = STARTTLS (port 587), true = implicit TLS (port 465)
