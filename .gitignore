@@ -1,0 +1,32 @@
+# ── Binaries ────────────────────────────────────────────────────
+cloudsync
+cloudsync.exe
+dist/
+
+# ── Config (contains secrets) ───────────────────────────────────
+config.yaml
+*.yaml
+!config.example.yaml
+
+# ── CloudSync runtime files ─────────────────────────────────────
+~/.cloudsync/
+gdrive_token.json
+*.state.json
+
+# ── Go toolchain ────────────────────────────────────────────────
+vendor/
+*.test
+*.out
+coverage.html
+go.sum.bak
+
+# ── OS artifacts ────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDEs ────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
